@@ -50,5 +50,3 @@ title('Filtered pixel intensity over time');
 
 
 
-
-
