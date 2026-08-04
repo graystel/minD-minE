@@ -1,0 +1,20 @@
+function kymoMatrix = kymoMaker(im, branchData,ibranch)
+    Nframes = size(im,3);
+    inds = branchData{ibranch}(:,3);
+    hyphaLen = length(inds);
+
+    kymoMatrix = zeros(Nframes,hyphaLen);
+
+    for iframe = 1:Nframes
+        thisIm = im(:,:,iframe);
+        kymoMatrix(iframe,:) = thisIm(inds);
+    end
+
+    figure;
+    imagesc(kymoMatrix);
+    colormap('parula');
+    colorbar;
+
+end
+
+%usage ex: myKymo = kymoMaker(im, branchData, 52);
