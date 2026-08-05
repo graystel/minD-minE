@@ -1,4 +1,4 @@
-function params = extract_oscillation_params(signal, fps)
+function params = hilberttransform(signal, fps)
     if nargin < 2 %if the number of arguments is less than 2
         fps = 1; 
     end

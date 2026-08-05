@@ -19,3 +19,4 @@ for i_t = 1:N_ims
     %and accessing the value at each pixel (the value = intensity)
     %and we add it to branchintensity's i_t+4th column
 end
+
