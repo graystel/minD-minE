@@ -19,10 +19,12 @@ function params = hilberttransform(signal, fps)
     else
         T_frames = NaN;
     end
+
+    f = (fps / (2 * pi)) * diff(inst_phase);
     
     params.Period_frames = T_frames;
     params.Period_seconds = T_frames / fps;
-    params.Frequency_Hz = fps / T_frames;
+    params.Frequency_Hz = f; %fps / T_frames;
     params.Mean_Amplitude = mean(envelope);
     params.Max_Amplitude = max(envelope);
     params.Envelope = envelope;

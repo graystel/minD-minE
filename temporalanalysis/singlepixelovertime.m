@@ -1,24 +1,21 @@
-function pixelintensity = singlepixelovertime(branchData, im, N_ims, ibranch, ipixel, display)
-    if nargin < 6 || isempty(display)
-        display = true;
+function pixelintensity = singlepixelovertime(branchData, im, ipixel, N_ims, ibranch,  display)
+    arguments 
+        branchData 
+        im
+        ipixel 
+        N_ims = 240
+        ibranch = 52
+        display = true
     end
-    if nargin < 5 || isempty(ipixel)
-        ipixel = 561;
-    end
-    if nargin < 4 || isempty(ibranch)
-        ibranch = 52;
-    end 
-    if nargin < 3 || isempty(N_ims)
-        N_ims = 240;
-    end 
-    figure;
-    
+
     thispixelData = branchData{ibranch}(ipixel,:);
+    x_coord = thispixelData(1); 
+    y_coord = thispixelData(2);
+
     pixelintensity = zeros(1, N_ims+4);
-    pixelintensity(:,1:4) = thispixelData;
     for i_t = 1:N_ims
         im_smooth = squeeze(im(:,:,i_t));
-        pixelintensity(1, i_t+4) = im_smooth(pixelintensity(1, 3));
+        pixelintensity(1, i_t+4) = im_smooth(x_coord, y_coord);
     end
     if display == true
         figure;

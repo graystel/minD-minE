@@ -1,25 +1,14 @@
 function [im, branchData] = setup(filepath, N_ims, i_tstart, N_frames, dt, reset, hyphaeThicknessRange, minArea)
     %housekeeping
-    if nargin < 8 || isempty(minArea)
-        minArea = 2000; %since we don't want hyphae that are too short, as they are uninteresting, we set a minimum area of the branch
-    end
-    if nargin < 7 || isempty(hyphaeThicknessRange)
-        hyphaeThicknessRange = [10, 40]; %we anticipate that the hyphae we're interested in are going to have this range of diammeters 
-    end
-    if nargin < 6 || isempty(reset)
-        reset = false;
-    end
-    if nargin < 5 || isempty(i_tstart)
-        i_tstart = 0; %we expect to start from frame 0
-    end
-    if nargin < 5 || isempty(dt)
-        dt = 2;
-    end
-    if nargin < 4 || isempty(N_frames)
-        N_frames = 5;
-    end
-    if nargin < 3 || isempty(i_tstart)
-        i_tstart = 0; %we expect to start from frame 0
+    arguments 
+        filepath 
+        N_ims = 240
+        i_tstart = 0
+        N_frames = 5 % idk why
+        dt = 2 %verify?
+        reset = false
+        hyphaeThicknessRange = [10, 40]
+        minArea = 2000
     end
 
     if reset == true
@@ -29,7 +18,7 @@ function [im, branchData] = setup(filepath, N_ims, i_tstart, N_frames, dt, reset
     end
 
     %create the image
-    loci.common.DebugTools.setRootLevel('WARN');
+    %loci.common.DebugTools.setRootLevel('WARN'); %doesn't work
     object = BioformatsImage(filepath);
     if ~exist('im', 'var') || ~exist('imframe', 'var') %i.e. if a variable named im or imframe don't exist, then we want to prepare them
         for i_t = 1:N_ims %for loop through all the frames

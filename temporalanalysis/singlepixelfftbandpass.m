@@ -1,4 +1,12 @@
 function [filteredsignal, freqs] = singlepixelfftbandpass(pixelintensity, dt, N_ims, showplot, showfreq)
+    arguments
+        pixelintensity
+        dt = 2
+        N_ims = 240
+        showplot = true
+        showfreq = true
+    end    
+
     pixelsignal = pixelintensity(5:end);
     pixelsignal = pixelsignal - mean(pixelsignal);
     pixelsignal = pixelsignal / std(pixelsignal);

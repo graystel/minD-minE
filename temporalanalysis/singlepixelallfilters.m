@@ -1,17 +1,13 @@
 function [filteredmed, filteredsgolay, filteredgauss] = singlepixelallfilters(pixelintensity, ipixel, ibranch, bwindow, a, display)
-    %housekeeping 
-    if nargin < 5 || isempty(display)
-        ibranch = 52;
+    arguments
+        pixelintensity {mustBeVector}
+        ipixel (1, 1) int16
+        ibranch = 52
+        bwindow = 11
+        a = 1
+        display = false
     end
-    if nargin < 4 || isempty(display)
-        display = true;
-    end
-    if nargin < 3 || isempty(a)
-        a = 1;
-    end
-    if nargin < 2 || isempty(bwindow)
-        bwindow = 11; % odd #
-    end
+    
 
     %set up
     pixelsignalfilt = pixelintensity(5:end);

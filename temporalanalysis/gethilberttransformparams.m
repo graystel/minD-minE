@@ -1,6 +1,13 @@
-function significantpixelfeatures = gethilberttransformparams(hilberttransform, pixelsofinterest, branchData, im, N_ims, ibranch)
-    if nargin < 6 || isempty(ibranch)
-        ibranch = 52;
+function significantpixelfeatures = gethilberttransformparams(hilberttransform, pixelsofinterest, branchData, im, N_ims, ibranch, bwindow, a)
+    arguments 
+        hilberttransform
+        pixelsofinterest
+        branchData
+        im
+        N_ims = 240
+        ibranch = 56
+        bwindow = 11
+        a = 1
     end
     
     topx = length(pixelsofinterest);
@@ -22,6 +29,8 @@ function significantpixelfeatures = gethilberttransformparams(hilberttransform, 
         if std(pixelsignalfilt) > 0
             pixelsignalfilt = pixelsignalfilt / std(pixelsignalfilt);
         end
+        b = gausswin(bwindow);
+        b = b / sum(b);
         filteredgauss = filtfilt(b, a, pixelsignalfilt);
         
         params = hilberttransform(filteredgauss); %using the hilbert transform
