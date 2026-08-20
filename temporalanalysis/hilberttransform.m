@@ -1,6 +1,7 @@
 function params = hilberttransform(signal, fps)
-    if nargin < 2 %if the number of arguments is less than 2
-        fps = 1; 
+    arguments
+        signal
+        fps = 2
     end
     
     sig_centered = signal - mean(signal);

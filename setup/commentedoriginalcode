@@ -1,4 +1,4 @@
-function [im, branchData, pixeltoVertex, adjacencyMatrix, edgeMatrix] = setup(filepath, loopremover, N_ims, i_tstart, N_frames, dt, reset, hyphaeThicknessRange, minArea, removeloop)
+function [im, branchData, pixeltoVertex, adjacencyMatrix, edgeMatrix] = setup(filepath, loopremover, N_ims, i_tstart, N_frames, dt, reset, hyphaeThicknessRange, minArea)
     %housekeeping
     arguments 
         filepath 
@@ -10,7 +10,6 @@ function [im, branchData, pixeltoVertex, adjacencyMatrix, edgeMatrix] = setup(fi
         reset = false
         hyphaeThicknessRange = [10, 40]
         minArea = 2000
-        removeloop = false
     end
 
     if reset == true
@@ -181,8 +180,6 @@ function [im, branchData, pixeltoVertex, adjacencyMatrix, edgeMatrix] = setup(fi
         end
     end
 
-    if removeloop == true
-        [branchData, adjacencyMatrix, edgeMatrix] = loopremover(branchData, adjacencyMatrix, edgeMatrix);
-    end
+    [branchData, adjacencyMatrix, edgeMatrix] = loopremover(branchData, adjacencyMatrix, edgeMatrix);
 
 end

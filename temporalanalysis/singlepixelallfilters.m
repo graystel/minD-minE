@@ -13,6 +13,7 @@ function [filteredmed, filteredsgolay, filteredgauss] = singlepixelallfilters(pi
     pixelsignalfilt = pixelintensity(5:end);
     pixelsignalfilt = pixelsignalfilt - mean(pixelsignalfilt);
     pixelsignalfilt = pixelsignalfilt / std(pixelsignalfilt);
+    pixelsignalfilt = double(pixelsignalfilt);
 
     % FILTERING
     filteredmed = medfilt1(pixelsignalfilt, 10);
