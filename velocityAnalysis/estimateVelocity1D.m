@@ -1,4 +1,4 @@
-function [velocities, positions, zncc_matrix] = estimateVelocity1Drefactor(I1, I2, window_size, search_range, stepSize, dx, dt)
+function [velocities, positions, zncc_matrix] = estimateVelocity1D(I1, I2, window_size, search_range, stepSize, dx, dt)
 % estimateVelocity1D Estimates velocity from two 1D intensity distributions.
 %
 % Inputs:

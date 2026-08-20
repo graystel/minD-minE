@@ -48,7 +48,7 @@ exclusion_radius = 5; % Needed for the SNR calculation
 
 % 4. Compute velocity across all frame pairs
 % Use the refactored function for the first pair to get exact array sizes
-[v_first, s_pos, zncc_first] = estimateVelocity1Drefactor(...
+[v_first, s_pos, zncc_first] = estimateVelocity1D(...
     branchintensityUniform(:,1), branchintensityUniform(:,2), ...
     window_size, search_range, step_size, dx, dt);
 
@@ -69,7 +69,7 @@ for i_frame = 2:(N_ims - 1)
     I2_loop = branchintensityUniform(:, i_frame + 1);
 
     % 1. Get Velocity and ZNCC Matrix
-    [v_temp, ~, zncc_temp] = estimateVelocity1Drefactor(...
+    [v_temp, ~, zncc_temp] = estimateVelocity1D(...
         I1_loop, I2_loop, window_size, search_range, 1, dx, dt);
 
     % 2. Get SNR from the ZNCC Matrix
