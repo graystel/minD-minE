@@ -91,6 +91,7 @@ function [im, branchData, pixeltoVertex, adjacencyMatrix, edgeMatrix] = setup(fi
     %bwskeleton makes a skeleton (1 pixel wide) of the filled/1 values of cleanMask with a minimum branch length of 25
     [Ny, Nx] = size(skeleton);
     branchPoints = bwmorph(skeleton, "branchpoints"); %asks to find the branch points (bwmorph performs morphological operations on binary images)
+    branchPoints = imdilate(branchPoints, strel('disk', 1)); %this looks in a disk of radius 2 around branchpoints and assigns the branchpoint-ness to the neighborhood
     isolatedBranches = skeleton & ~branchPoints; %keeps the skeletons without the branchpoints
     endpoints = bwmorph(skeleton, "endpoints"); %extracts the endpoints
     isolatedVertices = branchPoints | endpoints; %both branch points and endpoints

@@ -12,7 +12,7 @@ function [branchData, adj, edgeMatrix] = loopremover(branchData, adj, edgeMatrix
                     lengths(k) = size(branchData{edges(k)}, 1);
                 end
 
-                [~, sortIdx] = sort(lengths, "descend"); %since we wanna keep either the shortest or the longest (will experiment to see
+                [~, sortIdx] = sort(lengths, "ascend"); %since we wanna keep either the shortest or the longest (will experiment to see
                 %which one leads to better results)
                 sortededges = edges(sortIdx);   
                 todelete = [todelete; sortededges(2:end)]; %keep the first, append the rest (loop/redundant) to a list of branches 
@@ -29,7 +29,7 @@ function [branchData, adj, edgeMatrix] = loopremover(branchData, adj, edgeMatrix
     end
 
     %delete from branchData in descending order for preservation
-    alltodelete = sort(todelete, 'ascend');
+    alltodelete = sort(todelete, 'descend');
     for k = 1:length(alltodelete)
         delIdx = alltodelete(k);
         branchData(delIdx) = [];
@@ -37,5 +37,7 @@ function [branchData, adj, edgeMatrix] = loopremover(branchData, adj, edgeMatrix
         %branches later than the current branch get decreased by 1 in adj to keep branches in branchdata and adj synchronized
         adj(adj > delIdx) = adj(adj > delIdx) - 1;
     end
+
+
 end
     
