@@ -1,4 +1,4 @@
-%% set up
+%% set up (copied from main file just to read in the data)
 
 
 bfr = BioformatsImage('C:\mydata\School\RoperLab\trains\matlab\OLD_WAVES_GFP_80.btf');
@@ -149,7 +149,7 @@ for i_t = 1:N_ims
     branchintensity(:,i_t) = filteredIm(inds);
 end
 
-%% clean
+%% clean figures
 close all;
 %% UI set up
 
@@ -242,7 +242,7 @@ function dsTab = plotDSDT(sUniform, I1, I2, pos, frameA, frameB, tabGroup)
     dsTab = uitab(tabGroup);
     velLay = tiledlayout(dsTab, 3,1);
     
-    half_win = 2; 
+    half_win = 20; 
     N = length(I1);
     slopes = zeros(1, N); % Pre-allocate for performance
 
@@ -269,7 +269,7 @@ function dsTab = plotDSDT(sUniform, I1, I2, pos, frameA, frameB, tabGroup)
     plot(ax1, sUniform, I1, 'b-', 'LineWidth', 1.5, 'DisplayName', sprintf('Frame %d', frameA));
     grid(ax1, 'on');
     ylabel(ax1, 'Intensity');
-    title(ax1, sprintf('1. Original Wave Propagation: Frame %d vs Frame %d', frameA, frameB));
+    title(ax1, sprintf('Original Wave Propagation: Frame %d vs Frame %d', frameA, frameB));
     legend(ax1, 'Location', 'northeast');
     
     % --- Panel 2: Shift-Corrected Overlay ---
@@ -280,17 +280,17 @@ function dsTab = plotDSDT(sUniform, I1, I2, pos, frameA, frameB, tabGroup)
     hold(ax2, 'off'); grid(ax2, 'on');
     ylabel(ax2, 'Intensity');
     ylim(ax2, [min( I1)*0.9, max( I1)*1.1]); 
-    title(ax2, '2. Shift-Corrected Overlay');
+    title(ax2, 'Shift-Corrected Overlay');
     legend(ax2, 'Location', 'northeast');
     
     % --- Panel 3: Spatial Velocity Profile ---
     ax3 = nexttile(velLay);
     
-    plot(ax3, sUniform, slopes, 'k-o', 'LineWidth', 1.5, 'MarkerFaceColor', 'r', 'MarkerSize', 4);
+    plot(ax3, sUniform, slopes, 'b-', 'LineWidth', 1.5, 'DisplayName', sprintf('Frame %d ds/dt', frameA));
     yline(ax3, 0, 'k--', 'Zero Shift'); grid(ax3, 'on')
-    xlabel(ax3, 'Arc Length s (pixels)'); 
-    ylabel(ax3, 'Velocity (px/frame)');
-    title(ax3, '3. Calculated Spatial Velocity Profile v (s)');
+    xlabel(ax3, 'time'); 
+    ylabel(ax3, 'ds/dt');
+    title(ax3, 'Calculated change in intensity over time');
     
     
     linkaxes([ax1,ax2,ax3], 'x');
@@ -318,7 +318,7 @@ exclusion_radius = 5; % Needed for the SNR calculation
 
 % 4. Compute velocity across all frame pairs
 % Use the refactored function for the first pair to get exact array sizes
-[v_first, s_pos, zncc_first] = estimateVelocity1D(...
+[v_first, s_pos, zncc_first] = estimateVelocity1Drefactor(...
     branchintensityUniform(:,1), branchintensityUniform(:,2), ...
     window_size, search_range, step_size, dx, dt);
 
@@ -339,7 +339,7 @@ for i_frame = 2:(N_ims - 1)
     I2_loop = branchintensityUniform(:, i_frame + 1);
 
     % 1. Get Velocity and ZNCC Matrix
-    [v_temp, ~, zncc_temp] = estimateVelocity1D(...
+    [v_temp, ~, zncc_temp] = estimateVelocity1Drefactor(...
         I1_loop, I2_loop, window_size, search_range, 1, dx, dt);
 
     % 2. Get SNR from the ZNCC Matrix
@@ -358,98 +358,98 @@ end
 
 
 %% Code snippet for ZNCC Best-Fit & SNR Plot 
-% function plotSNRDiagnostics(sUniform, I1, I2, positions, snr_array, target_pos, window_size, search_range, exclusion_radius)
-% % PLOTSNRDIAGNOSTICS Visualizes the ZNCC curve for a single point and the SNR profile for the whole hypha.
-% %
-% % Inputs:
-% %   sUniform   - Full spatial grid of the hypha
-% %   I1, I2     - 1D intensity arrays for the two frames being compared
-% %   positions  - The spatial coordinates where SNR was calculated
-% %   snr_array  - The pre-calculated SNR values for this frame pair
-% %   target_pos - The physical position (arc length) to deep-dive into
-% %   window_size, search_range - Velocimetry parameters
-% %   exclusion_radius - (Optional) Pixels to exclude around peak. Default: 5
-% 
-% if nargin < 9
-%     exclusion_radius = 5;
-% end
-% 
-% half_win = floor(window_size / 2);
-% shifts   = -search_range : search_range;
-% 
-% % --- PART 1: Compute ZNCC on-the-fly for the single deep-dive point ---
-% % Find the index in sUniform closest to the requested target_pos
-% [~, target_idx] = min(abs(sUniform - target_pos)); 
-% 
-% % Re-run just this one point to get the curve for the plot
-% zncc = computeZNCC(I1, I2, target_idx, half_win, shifts);
-% [best_shift_px, R_max, max_idx] = findSubpixelPeak(zncc, shifts);
-% 
-% % Recreate the noise mask for plotting
-% noise_mask = true(1, length(zncc));
-% start_ex   = max(1, max_idx - exclusion_radius);
-% end_ex     = min(length(zncc), max_idx + exclusion_radius);
-% noise_mask(start_ex : end_ex) = false;
-% 
-% noise_points = zncc(noise_mask);
-% mu_noise     = mean(noise_points);
-% target_snr   = calculateSNR(zncc, R_max, max_idx);
-% 
-% % --- PART 2: Identify High Confidence Regions ---
-% high_conf = snr_array > 3.0;
-% 
-% % --- PLOTTING ---
-% fig = figure('Name', 'SNR Diagnostics', 'Position', [150, 150, 800, 650]);
-% clf(fig);
-% 
-% % Panel 1: The ZNCC Curve for the specific target point
-% subplot(2, 1, 1);
-% plot(shifts, zncc, 'k-', 'LineWidth', 1.2, 'DisplayName', 'Full ZNCC Curve'); hold on;
-% plot(shifts(noise_mask), noise_points, 'co', 'MarkerFaceColor', 'c', 'DisplayName', 'Noise Points');
-% plot(best_shift_px, R_max, 'r*', 'MarkerSize', 12, 'LineWidth', 2, ...
-%     'DisplayName', sprintf('Best Fit Peak (%.2f)', R_max));
-% yline(mu_noise, 'm--', 'LineWidth', 1.5, ...
-%     'DisplayName', sprintf('Mean Noise Floor (%.2f)', mu_noise));
-% grid on;
-% xlabel('Shift (pixels)');
-% ylabel('ZNCC Score');
-% title(sprintf('1. ZNCC Best-Fit at s = %.1f px (SNR = %.2f)', sUniform(target_idx), target_snr));
-% legend('Location', 'northeast');
-% hold off;
-% 
-% % Panel 2: The full SNR Profile along the hypha
-% subplot(2, 1, 2);
-% % Plotting directly against 'positions' since SNR isn't calculated at the margins
-% plot(positions, snr_array, 'k-', 'LineWidth', 1.2, 'DisplayName', 'Local SNR'); hold on;
-% yline(3.0, 'r--', 'Confidence Threshold (SNR = 3.0)', 'LineWidth', 1.5, 'LabelHorizontalAlignment', 'left');
-% 
-% % Highlight high confidence regions in green
-% plot(positions(high_conf), snr_array(high_conf), 'g.', 'MarkerSize', 10, 'DisplayName', 'High Confidence Data');
-% 
-% grid on;
-% xlim([min(sUniform), max(sUniform)]); % Keep X-axis scaled to the full hypha
-% xlabel('Arc Length s (pixels)');
-% ylabel('SNR Value');
-% title('2. Full Hypha SNR Profile');
-% legend('Location', 'northeast');
-% hold off;
-% end
-% 
-% % Choose which frame pair to look at
-% frameA = 10;
-% frameB = 11;
-% 
-% % Grab the specific data for that pair
-% I1_test = branchintensityUniform(:, frameA);
-% I2_test = branchintensityUniform(:, frameB);
-% snr_test = snr_map(:, frameA); 
-% 
-% % Pick a physical location to deep-dive (e.g., the exact middle)
-% middle_pos = max(sUniform) / 2;
-% 
-% % Call the function!
-% plotSNRDiagnostics(sUniform, I1_test, I2_test, s_pos, snr_test, middle_pos, 81, 12);
-% 
+function plotSNRDiagnostics(sUniform, I1, I2, positions, snr_array, target_pos, window_size, search_range, exclusion_radius)
+% PLOTSNRDIAGNOSTICS Visualizes the ZNCC curve for a single point and the SNR profile for the whole hypha.
+%
+% Inputs:
+%   sUniform   - Full spatial grid of the hypha
+%   I1, I2     - 1D intensity arrays for the two frames being compared
+%   positions  - The spatial coordinates where SNR was calculated
+%   snr_array  - The pre-calculated SNR values for this frame pair
+%   target_pos - The physical position (arc length) to deep-dive into
+%   window_size, search_range - Velocimetry parameters
+%   exclusion_radius - (Optional) Pixels to exclude around peak. Default: 5
+
+if nargin < 9
+    exclusion_radius = 5;
+end
+
+half_win = floor(window_size / 2);
+shifts   = -search_range : search_range;
+
+% --- PART 1: Compute ZNCC on-the-fly for the single deep-dive point ---
+% Find the index in sUniform closest to the requested target_pos
+[~, target_idx] = min(abs(sUniform - target_pos)); 
+
+% Re-run just this one point to get the curve for the plot
+zncc = computeZNCC(I1, I2, target_idx, half_win, shifts);
+[best_shift_px, R_max, max_idx] = findSubpixelPeak(zncc, shifts);
+
+% Recreate the noise mask for plotting
+noise_mask = true(1, length(zncc));
+start_ex   = max(1, max_idx - exclusion_radius);
+end_ex     = min(length(zncc), max_idx + exclusion_radius);
+noise_mask(start_ex : end_ex) = false;
+
+noise_points = zncc(noise_mask);
+mu_noise     = mean(noise_points);
+target_snr   = calculateSNR(zncc, exclusion_radius);
+
+% --- PART 2: Identify High Confidence Regions ---
+high_conf = snr_array > 3.0;
+
+% --- PLOTTING ---
+fig = figure('Name', 'SNR Diagnostics', 'Position', [150, 150, 800, 650]);
+clf(fig);
+
+% Panel 1: The ZNCC Curve for the specific target point
+subplot(2, 1, 1);
+plot(shifts, zncc, 'k-', 'LineWidth', 1.2, 'DisplayName', 'Full ZNCC Curve'); hold on;
+plot(shifts(noise_mask), noise_points, 'co', 'MarkerFaceColor', 'c', 'DisplayName', 'Noise Points');
+plot(best_shift_px, R_max, 'r*', 'MarkerSize', 12, 'LineWidth', 2, ...
+    'DisplayName', sprintf('Best Fit Peak (%.2f)', R_max));
+yline(mu_noise, 'm--', 'LineWidth', 1.5, ...
+    'DisplayName', sprintf('Mean Noise Floor (%.2f)', mu_noise));
+grid on;
+xlabel('Shift (pixels)');
+ylabel('ZNCC Score');
+title(sprintf('1. ZNCC Best-Fit at s = %.1f px (SNR = %.2f)', sUniform(target_idx), target_snr));
+legend('Location', 'northeast');
+hold off;
+
+% Panel 2: The full SNR Profile along the hypha
+subplot(2, 1, 2);
+% Plotting directly against 'positions' since SNR isn't calculated at the margins
+plot(positions, snr_array, 'k-', 'LineWidth', 1.2, 'DisplayName', 'Local SNR'); hold on;
+yline(3.0, 'r--', 'Confidence Threshold (SNR = 3.0)', 'LineWidth', 1.5, 'LabelHorizontalAlignment', 'left');
+
+% Highlight high confidence regions in green
+plot(positions(high_conf), snr_array(high_conf), 'g.', 'MarkerSize', 10, 'DisplayName', 'High Confidence Data');
+
+grid on;
+xlim([min(sUniform), max(sUniform)]); % Keep X-axis scaled to the full hypha
+xlabel('Arc Length s (pixels)');
+ylabel('SNR Value');
+title('2. Full Hypha SNR Profile');
+legend('Location', 'northeast');
+hold off;
+end
+
+% Choose which frame pair to look at
+frameA = 10;
+frameB = 11;
+
+% Grab the specific data for that pair
+I1_test = branchintensityUniform(:, frameA);
+I2_test = branchintensityUniform(:, frameB);
+snr_test = snr_map(:, frameA); 
+
+% Pick a physical location to deep-dive (e.g., the exact middle)
+middle_pos = max(sUniform) / 2;
+
+% Call the function!
+plotSNRDiagnostics(sUniform, I1_test, I2_test, s_pos, snr_test, middle_pos, 81, 12);
+
 
 
 %% plotVelocimetry Section
@@ -467,71 +467,3 @@ velOne = plotVelocimetryQC(sUniform, I1, I2, s_pos, vel_map(:, frameA), frameA, 
 velTwo = plotVelocimetryQC(sUniform, I1, I2, s_pos, vel_map(:, frameA), frameA, frameB, tgTwo);
 plotDSDT(sUniform, I1, I2, s_pos, frameA, frameB, tgTwo);
 
-%drawnow;
-
-
-%added 
-
-
-
-
-% % Setup parameters
-% frameA = 10;
-% frameB = 11;
-% I1 = branchintensityUniform(:, frameA);
-% I2 = branchintensityUniform(:, frameB);
-% 
-% window_size  = 81;   
-% search_range = 12; 
-% half_win = floor(window_size / 2);
-% shifts   = -search_range : search_range;
-% margin   = half_win + search_range;
-% 
-% % --- PART 1: Single-Point Deep Dive ---
-% target_idx = round(length(sUniform) / 2); 
-% 
-% % 1. Compute ZNCC, find peak, and calculate SNR using helpers
-% zncc = computeZNCC(I1, I2, target_idx, half_win, shifts);
-% [best_shift_px, R_max, max_idx] = findSubpixelPeak(zncc, shifts);
-% snr_val = calculateSNR(zncc, R_max, max_idx);
-% 
-% % 2. Recreate the mask just for the plot visuals (matching calculateSNR)
-% exclusion_radius = 5; 
-% noise_mask = true(1, length(zncc));
-% start_ex   = max(1, max_idx - exclusion_radius);
-% end_ex     = min(length(zncc), max_idx + exclusion_radius);
-% noise_mask(start_ex : end_ex) = false;
-% 
-% noise_points = zncc(noise_mask);
-% mu_noise     = mean(noise_points);
-% 
-% % 3. Plot ZNCC Best Fit and Noise Floor
-% figure(11); clf;
-% plot(shifts, zncc, 'k-', 'LineWidth', 1.2, 'DisplayName', 'Full ZNCC Curve'); hold on;
-% plot(shifts(noise_mask), noise_points, 'co', 'MarkerFaceColor', 'c', 'DisplayName', 'Noise Points');
-% plot(best_shift_px, R_max, 'r*', 'MarkerSize', 12, 'LineWidth', 2, ...
-%     'DisplayName', sprintf('Best Fit Peak (%.2f)', R_max));
-% yline(mu_noise, 'm--', 'LineWidth', 1.5, ...
-%     'DisplayName', sprintf('Mean Noise Floor (%.2f)', mu_noise));
-% grid on;
-% xlabel('Shift (pixels)');
-% ylabel('ZNCC Score');
-% title(sprintf('ZNCC Best-Fit at s = %.1f px (SNR = %.2f)', sUniform(target_idx), snr_val));
-% legend('Location', 'northeast');
-% hold off;
-% 
-% % --- PART 2: Full Hypha SNR Profile ---
-% snr_profile = zeros(1, length(sUniform));
-% 
-% % Loop through spatial locations along the hypha
-% for idx = (margin + 1) : (length(sUniform) - margin)
-% 
-%     % Use helpers to compute everything in 3 lines
-%     zncc_curve = computeZNCC(I1, I2, idx, half_win, shifts);
-%     [~, R_max, max_idx] = findSubpixelPeak(zncc_curve, shifts);
-% 
-%     snr_profile(idx) = calculateSNR(zncc_curve, R_max, max_idx);
-% end
-% 
-% % Chunk hypha into High SNR (> 3.0) and Low SNR (< 3.0) regions
-% high_confidence_chunks = snr_profile > 3.0;
