@@ -21,6 +21,15 @@ function [branchData, adj, edgeMatrix] = loopremover(branchData, adj, edgeMatrix
         end
     end
 
+    %for singlenode loops
+    for i=1:numNodes
+        selfloops = squeeze(adj(i, i, :));
+        selfloops = selfloops(selfloops > 0);
+        if ~isempty(selfloops)
+            todelete = [todelete; selfloops(:)];
+        end
+    end
+
     todelete = unique(todelete); %no repeats
 
     %first clear these from adj
