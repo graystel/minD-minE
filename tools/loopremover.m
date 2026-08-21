@@ -47,6 +47,43 @@ function [branchData, adj, edgeMatrix] = loopremover(branchData, adj, edgeMatrix
         adj(adj > delIdx) = adj(adj > delIdx) - 1;
     end
 
+    edgeMatrix(:, 1) = (1:length(branchData));
+
+    %using minspantree to remove loops of multiple nodes
+    % branches = edgeMatrix(:, 1);
+    % starts   = edgeMatrix(:, 2);
+    % ends     = edgeMatrix(:, 3);
+    % 
+    % branchlengths = zeros(length(branches), 1);
+    % for i = 1:length(branches)
+    %     branchlengths(i) = size(branchData{branches(i)}, 1);
+    % end
+    % 
+    hasNode72 = sum(edgeMatrix(:, 2) == 72 | edgeMatrix(:, 3) == 72);
+    fprintf('Node 72 appears %d times in edgeMatrix before MST.\n', hasNode72);
+    % originaltable = table([starts, ends], branchlengths, branches, 'VariableNames', {'EndNodes', 'Weight', 'branches'});
+    % untrimmedgraph = graph(originaltable);
+    % 
+    % trimmedgraph = minspantree(untrimmedgraph);
+    % startvertices = trimmedgraph.Edges.EndNodes(:,1);
+    % endvertices = trimmedgraph.Edges.EndNodes(:, 2);
+    % keptbranches = trimmedgraph.Edges.branches;
+    % 
+    % newbranchData = cell(length(keptbranches), 1);
+    % newadj = zeros(length(adj), length(adj));
+    % newedgeMatrix = zeros(length(keptbranches), 3);
+    % 
+    % for i=1:length(keptbranches)
+    %     a = startvertices(i);
+    %     b = endvertices(i);
+    %     branchnumber = keptbranches(i);
+    % 
+    %     newbranchData{i} = branchData{branchnumber};
+    %     newadj(a, b) = i;
+    %     newadj(b, a) = i;
+    %     newedgeMatrix(i,:) = [i a b];
+    % 
+    % end
 
 end
     

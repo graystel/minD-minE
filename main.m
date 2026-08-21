@@ -57,6 +57,7 @@ fprintf("checkpt 1\n");
 
 hyphaenodelabeling(im, branchData, pixeltoVertex);
 nodelabeling(im, pixeltoVertex);
+hyphaelabeling(im, branchData);
 
 %% DOESN'T WORK YET
 % i_tstart = 0; 
